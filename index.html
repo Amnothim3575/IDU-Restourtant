@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="es" class="h-full bg-slate-50">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Restaurante El Sabor - Pedidos y Entrega en Vivo</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,800;1,600&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#fff1f1',
+                            100: '#ffdfdf',
+                            500: '#e11d48',
+                            600: '#be123c',
+                            700: '#9f1239',
+                            900: '#4c0519',
+                        },
+                        amber: {
+                            400: '#fbbf24',
+                            500: '#f59e0b',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                        serif: ['Playfair Display', 'serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .page-view {
+            display: none;
+            opacity: 0;
+            transition: opacity 0.25s ease-in-out;
+        }
+        .page-view.active {
+            display: block;
+            opacity: 1;
+        }
+        .food-card-hover {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .food-card-hover:hover {
+            transform: translateY(-4px);
+        }
+        @keyframes pulse-ring {
+            0% { transform: scale(0.95); opacity: 0.8; }
+            50% { transform: scale(1.05); opacity: 0.4; }
+            100% { transform: scale(0.95); opacity: 0.8; }
+        }
+        .animate-pulse-ring {
+            animation: pulse-ring 2s infinite ease-in-out;
+        }
+    </style>
+</head>
+<body class="h-full flex flex-col font-sans text-slate-800 bg-slate-50 antialiased selection:bg-brand-500 selection:text-white">
+
+    <!-- Header Navigation -->
+    <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200/80 shadow-sm">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-20">
+                <!-- Logo -->
+                <a href="#" onclick="showPage('home'); return false;" class="flex items-center gap-3 group">
+                    <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-brand-600 to-amber-500 flex items-center justify-center text-white shadow-lg shadow-brand-500/20 group-hover:scale-105 transition-transform">
+                        <i class="fa-solid font-bold fa-utensils text-xl"></i>
+                    </div>
+                    <div>
+                        <span class="font-serif text-2xl font-bold tracking-tight text-slate-900 block leading-none">El Sabor</span>
+                        <span class="text-xs font-semibold uppercase tracking-widest text-brand-600">Restaurante</span>
+                    </div>
+                </a>
+
+                <!-- Navigation Links -->
+                <nav class="hidden md:flex items-center gap-8 font-medium text-sm">
+                    <button onclick="showPage('home')" class="nav-btn text-slate-600 hover:text-brand-600 transition-colors" id="nav-home">Inicio y Menú</button>
+                    <button onclick="showPage('checkout')" class="nav-btn text-slate-600 hover:text-brand-600 transition-colors" id="nav-checkout">Procesar Pago</button>
+                    <button onclick="showPage('tracking')" id="nav-tracking-btn" class="nav-btn text-slate-600 hover:text-brand-600 transition-colors hidden relative">
+                        <span class="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-ping mr-1"></span>
+                        Estado del Pedido
+                    </button>
+                </nav>
+
+                <!-- Order Cart Icon Badge -->
+                <button onclick="showPage('checkout')" class="relative p-3 rounded-xl bg-slate-100 hover:bg-brand-50 text-slate-700 hover:text-brand-600 transition-all focus:outline-none focus:ring-2 focus:ring-brand-500">
+                    <i class="fa-solid fa-cart-shopping text-lg"></i>
+                    <span id="cart-badge" class="absolute -top-1 -right-1 bg-brand-600 text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center shadow-md">0</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="flex-grow">
+        
+        <!-- PAGE 1: HOME PAGE + FULL MENU (INICIO Y MENÚ COMPLETO) -->
+        <section id="page-home" class="page-view active">
+            <!-- Hero Banner -->
+            <div class="relative bg-slate-900 text-white overflow-hidden py-16 lg:py-20">
+                <div class="absolute inset-0 z-0 opacity-40 bg-[radial-gradient(#e11d48_1px,transparent_1px)] [background-size:16px_16px]"></div>
+                <div class="absolute -right-20 -bottom-20 w-96 h-96 bg-brand-600/30 rounded-full blur-3xl"></div>
+                
+                <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+                    <div class="max-w-2xl">
+                        <span class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-brand-500/20 text-brand-300 border border-brand-500/30 mb-4">
+                            <i class="fa-solid fa-motorcycle text-amber-400"></i> Entrega Rápida Garantizada en 15 Minutos
+                        </span>
+                        <h1 class="font-serif text-4xl sm:text-5xl font-extrabold tracking-tight text-white mb-4 leading-tight">
+                            ¡El verdadero Sabor a tu mesa o domicilio!
+                        </h1>
+                        <p class="text-slate-300 text-base mb-6 leading-relaxed">
+                            Explora nuestras platillos, bebidas refrescantes y deliciosos postres. Paga fácilmente con M-Pesa y sigue tu pedido en tiempo real.
+                        </p>
+                        <div class="flex flex-wrap gap-3">
+                            <a href="#menu-comidas" class="px-6 py-3 rounded-xl bg-brand-600 hover:bg-brand-500 text-white font-bold text-sm shadow-lg shadow-brand-600/30 transition-all">
+                                <i class="fa-solid fa-utensils mr-2"></i> Platos Principales
+                            </a>
+                            <a href="#menu-bebidas" class="px-6 py-3 rounded-xl bg-white/10 hover:bg-white/20 text-white font-semibold text-sm backdrop-blur-sm border border-white/10 transition-all">
+                                <i class="fa-solid fa-glass-water mr-2"></i> Bebidas
+                            </a>
+                            <a href="#menu-postres" class="px-6 py-3 rounded-xl bg-white/10 hover:bg-white/20 text-white font-semibold text-sm backdrop-blur-sm border border-white/10 transition-all">
+                                <i class="fa-solid fa-ice-cream mr-2"></i> Postres
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Menu Layout (Grid with sticky cart sidebar) -->
+            <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    
+                    <!-- Menu Catalog Left Column (2 Cols) -->
+                    <div class="lg:col-span-2 space-y-12">
+                        
+                        <!-- SECTION 1: FOOD (PLATOS PRINCIPALES) -->
+                        <div id="menu-comidas" class="scroll-mt-24">
+                            <div class="flex items-center gap-3 mb-6 pb-3 border-b-2 border-brand-600">
+                                <span class="text-3xl">🍔</span>
+                                <div>
+                                    <h2 class="font-serif text-2xl font-bold text-slate-900">Platos Principales</h2>
+                                    <p class="text-xs text-slate-500">Deliciosas opciones para saciar tu hambre</p>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                <!-- Food Option 1 -->
+                                <div class="bg-white rounded-2xl border border-slate-200/80 p-4 shadow-sm food-card-hover flex flex-col justify-between">
+                                    <div>
+                                        <div class="h-28 bg-slate-100 rounded-xl flex items-center justify-center text-5xl mb-3">🍟</div>
+                                        <h3 class="font-bold text-slate-900 text-sm mb-1">Papas Fritas y Salchicha</h3>
+                                        <p class="text-xs text-slate-500 mb-3">Crujientes papas fritas con salchicha dorada.</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-lg font-extrabold text-brand-600 mb-2">450 KSh</p>
+                                        <button onclick="addToCart('food_1')" class="w-full py-2 px-3 bg-slate-900 hover:bg-brand-600 text-white font-semibold text-xs rounded-lg transition-colors flex items-center justify-center gap-1">
+                                            <i class="fa-solid fa-plus"></i> Agregar
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Food Option 2 -->
+                                <div class="bg-white rounded-2xl border border-slate-200/80 p-4 shadow-sm food-card-hover flex flex-col justify-between">
+                                    <div>
+                                        <div class="h-28 bg-slate-100 rounded-xl flex items-center justify-center text-5xl mb-3">🥞</div>
+                                        <h3 class="font-bold text-slate-900 text-sm mb-1">Huevos, Pancakes y Salchicha</h3>
+                                        <p class="text-xs text-slate-500 mb-3">Huevos, 3 pancakes esponjosos y salchicha.</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-lg font-extrabold text-brand-600 mb-2">1,200 KSh</p>
+                                        <button onclick="addToCart('food_2')" class="w-full py-2 px-3 bg-slate-900 hover:bg-brand-600 text-white font-semibold text-xs rounded-lg transition-colors flex items-center justify-center gap-1">
+                                            <i class="fa-solid fa-plus"></i> Agregar
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Food Option 3 -->
+                                <div class="bg-white rounded-2xl border border-slate-200/80 p-4 shadow-sm food-card-hover flex flex-col justify-between">
+                                    <div>
+                                        <div class="h-28 bg-slate-100 rounded-xl flex items-center justify-center text-5xl mb-3">🧇</div>
+                                        <h3 class="font-bold text-slate-900 text-sm mb-1">Waffles Especiales</h3>
+                                        <p class="text-xs text-slate-500 mb-3">Waffles recién hechos con miel y fruta.</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-lg font-extrabold text-brand-600 mb-2">700 KSh</p>
+                                        <button onclick="addToCart('food_3')" class="w-full py-2 px-3 bg-slate-900 hover:bg-brand-600 text-white font-semibold text-xs rounded-lg transition-colors flex items-center justify-center gap-1">
+                                            <i class="fa-solid fa-plus"></i> Agregar
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- SECTION 2: DRINKS (BEBIDAS) -->
+                        <div id="menu-bebidas" class="scroll-mt-24">
+                            <div class="flex items-center gap-3 mb-6 pb-3 border-b-2 border-amber-500">
+                                <span class="text-3xl">🥤</span>
+                                <div>
+                                    <h2 class="font-serif text-2xl font-bold text-slate-900">Bebidas</h2>
+                                    <p class="text-xs text-slate-500">Refresca tu paladar con nuestras bebidas</p>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                <!-- Drink Option 1 -->
+                                <div class="bg-white rounded-2xl border border-slate-200/80 p-4 shadow-sm food-card-hover flex flex-col justify-between">
+                                    <div>
+                                        <div class="h-28 bg-amber-50 rounded-xl flex items-center justify-center text-5xl mb-3">💧</div>
+                                        <h3 class="font-bold text-slate-900 text-sm mb-1">Agua Mineral</h3>
+                                        <p class="text-xs text-slate-500 mb-3">Agua pura de manantial (500ml).</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-lg font-extrabold text-brand-600 mb-2">120 KSh</p>
+                                        <button onclick="addToCart('drink_1')" class="w-full py-2 px-3 bg-slate-900 hover:bg-brand-600 text-white font-semibold text-xs rounded-lg transition-colors flex items-center justify-center gap-1">
+                                            <i class="fa-solid fa-plus"></i> Agregar
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Drink Option 2 -->
+                                <div class="bg-white rounded-2xl border border-slate-200/80 p-4 shadow-sm food-card-hover flex flex-col justify-between">
+                                    <div>
+                                        <div class="h-28 bg-amber-50 rounded-xl flex items-center justify-center text-5xl mb-3">🧃</div>
+                                        <h3 class="font-bold text-slate-900 text-sm mb-1">Jugo Natural</h3>
+                                        <p class="text-xs text-slate-500 mb-3">Jugo fresco recién exprimido.</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-lg font-extrabold text-brand-600 mb-2">200 KSh</p>
+                                        <button onclick="addToCart('drink_2')" class="w-full py-2 px-3 bg-slate-900 hover:bg-brand-600 text-white font-semibold text-xs rounded-lg transition-colors flex items-center justify-center gap-1">
+                                            <i class="fa-solid fa-plus"></i> Agregar
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Drink Option 3 -->
+                                <div class="bg-white rounded-2xl border border-slate-200/80 p-4 shadow-sm food-card-hover flex flex-col justify-between">
+                                    <div>
+                                        <div class="h-28 bg-amber-50 rounded-xl flex items-center justify-center text-5xl mb-3">🥤</div>
+                                        <h3 class="font-bold text-slate-900 text-sm mb-1">Refresco / Gaseosa</h3>
+                                        <p class="text-xs text-slate-500 mb-3">Gaseosa helada de tu elección.</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-lg font-extrabold text-brand-600 mb-2">180 KSh</p>
+                                        <button onclick="addToCart('drink_3')" class="w-full py-2 px-3 bg-slate-900 hover:bg-brand-600 text-white font-semibold text-xs rounded-lg transition-colors flex items-center justify-center gap-1">
+                                            <i class="fa-solid fa-plus"></i> Agregar
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- SECTION 3: DESSERTS (POSTRES) -->
+                        <div id="menu-postres" class="scroll-mt-24">
+                            <div class="flex items-center gap-3 mb-6 pb-3 border-b-2 border-emerald-500">
+                                <span class="text-3xl">🍰</span>
+                                <div>
+                                    <h2 class="font-serif text-2xl font-bold text-slate-900">Postres</h2>
+                                    <p class="text-xs text-slate-500">Un toque dulce para finalizar</p>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <!-- Dessert 1: Cheesecake -->
+                                <div class="bg-white rounded-2xl border border-slate-200/80 p-4 shadow-sm food-card-hover flex flex-col justify-between">
+                                    <div>
+                                        <div class="h-28 bg-emerald-50 rounded-xl flex items-center justify-center text-5xl mb-3">🍰</div>
+                                        <h3 class="font-bold text-slate-900 text-sm mb-1">Cheesecake (Pastel de Queso)</h3>
+                                        <p class="text-xs text-slate-500 mb-3">Cremoso pastel de queso con mermelada de frutos rojos.</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-lg font-extrabold text-brand-600 mb-2">450 KSh</p>
+                                        <button onclick="addToCart('dessert_cheesecake')" class="w-full py-2 px-3 bg-slate-900 hover:bg-brand-600 text-white font-semibold text-xs rounded-lg transition-colors flex items-center justify-center gap-1">
+                                            <i class="fa-solid fa-plus"></i> Agregar Cheesecake
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Dessert 2: Ice Cream with Flavor Selection -->
+                                <div class="bg-white rounded-2xl border border-slate-200/80 p-4 shadow-sm food-card-hover flex flex-col justify-between">
+                                    <div>
+                                        <div class="h-28 bg-emerald-50 rounded-xl flex items-center justify-center text-5xl mb-3">🍨</div>
+                                        <h3 class="font-bold text-slate-900 text-sm mb-1">Helado Artesanal</h3>
+                                        <p class="text-xs text-slate-500 mb-2">Selecciona tu sabor preferido:</p>
+                                        
+                                        <!-- Flavor Selector -->
+                                        <div class="space-y-1.5 mb-3 text-xs">
+                                            <label class="flex items-center justify-between p-1.5 rounded border border-slate-200 hover:bg-slate-50 cursor-pointer">
+                                                <div class="flex items-center gap-1.5">
+                                                    <input type="radio" name="ice_flavor" value="vainilla" checked onchange="updateIcePrice(120)" class="text-brand-600">
+                                                    <span>🍦 Vainilla</span>
+                                                </div>
+                                                <span class="font-bold text-slate-700">120 KSh</span>
+                                            </label>
+                                            <label class="flex items-center justify-between p-1.5 rounded border border-slate-200 hover:bg-slate-50 cursor-pointer">
+                                                <div class="flex items-center gap-1.5">
+                                                    <input type="radio" name="ice_flavor" value="chocolate" onchange="updateIcePrice(350)" class="text-brand-600">
+                                                    <span>🍫 Chocolate</span>
+                                                </div>
+                                                <span class="font-bold text-slate-700">350 KSh</span>
+                                            </label>
+                                            <label class="flex items-center justify-between p-1.5 rounded border border-slate-200 hover:bg-slate-50 cursor-pointer">
+                                                <div class="flex items-center gap-1.5">
+                                                    <input type="radio" name="ice_flavor" value="fresa" onchange="updateIcePrice(400)" class="text-brand-600">
+                                                    <span>🍓 Fresa</span>
+                                                </div>
+                                                <span class="font-bold text-slate-700">400 KSh</span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <p class="text-lg font-extrabold text-brand-600 mb-2" id="ice-cream-dynamic-price">120 KSh</p>
+                                        <button onclick="addSelectedIceCream()" class="w-full py-2 px-3 bg-slate-900 hover:bg-brand-600 text-white font-semibold text-xs rounded-lg transition-colors flex items-center justify-center gap-1">
+                                            <i class="fa-solid fa-plus"></i> Agregar Helado
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Cart Sidebar Right Column (1 Col) -->
+                    <div class="lg:col-span-1">
+                        <div class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm sticky top-28">
+                            <h3 class="font-serif text-xl font-bold text-slate-900 mb-4 pb-3 border-b border-slate-100 flex items-center justify-between">
+                                <span>Tu Carrito</span>
+                                <i class="fa-solid fa-cart-shopping text-brand-600"></i>
+                            </h3>
+                            
+                            <div id="cart-items-container" class="space-y-3 mb-6 max-h-64 overflow-y-auto pr-1">
+                                <p class="text-slate-400 text-sm text-center py-6">Tu carrito está vacío.<br>Haz clic en "Agregar" en el menú.</p>
+                            </div>
+
+                            <div class="border-t border-slate-100 pt-4 space-y-2 text-sm mb-6">
+                                <div class="flex justify-between text-slate-600">
+                                    <span>Subtotal</span>
+                                    <span id="summary-subtotal" class="font-semibold">0 KSh</span>
+                                </div>
+                                <div class="flex justify-between text-base font-bold text-slate-900 pt-2 border-t border-slate-100">
+                                    <span>Total a Pagar</span>
+                                    <span id="summary-total" class="text-brand-600">0 KSh</span>
+                                </div>
+                            </div>
+
+                            <button onclick="showPage('checkout')" id="btn-proceed-checkout" disabled class="w-full py-3.5 bg-slate-300 text-slate-500 font-bold rounded-xl transition-all flex items-center justify-center gap-2 cursor-not-allowed">
+                                Proceder al Pago <i class="fa-solid fa-arrow-right"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- PAGE 2: CHECKOUT & PAYMENT (PROCESAR PAGO) -->
+        <section id="page-checkout" class="page-view py-12">
+            <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+                
+                <button onclick="showPage('home')" class="inline-flex items-center gap-2 text-sm font-semibold text-slate-600 hover:text-brand-600 mb-6 transition-colors">
+                    <i class="fa-solid fa-arrow-left"></i> Volver al Menú
+                </button>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <!-- Payment Form (2 Cols) -->
+                    <div class="md:col-span-2 bg-white p-6 sm:p-8 rounded-2xl border border-slate-200/80 shadow-sm">
+                        <h2 class="font-serif text-2xl font-bold text-slate-900 mb-6">Detalles de Entrega y Pago</h2>
+                        
+                        <form id="payment-form" onsubmit="handlePaymentSubmit(event)" class="space-y-6">
+                            <!-- Customer Info -->
+                            <div>
+                                <label class="block text-sm font-semibold text-slate-700 mb-1" for="client-name">Nombre Completo *</label>
+                                <input type="text" id="client-name" required placeholder="Ej. Maria Rodríguez" class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none">
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-semibold text-slate-700 mb-1" for="client-address">Dirección de Entrega / Número de Mesa *</label>
+                                <input type="text" id="client-address" required placeholder="Ej. Mesa #3 o Calle 10 #45-20" class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none">
+                            </div>
+
+                            <!-- Payment Options -->
+                            <div>
+                                <label class="block text-sm font-semibold text-slate-700 mb-3">Método de Pago *</label>
+                                <div class="grid grid-cols-3 gap-3">
+                                    <label class="relative flex flex-col items-center justify-center p-3 border-2 rounded-xl cursor-pointer hover:border-brand-500 transition-all border-brand-500 bg-brand-50/30" id="label-mpesa">
+                                        <input type="radio" name="payment_method" value="mpesa" checked onclick="togglePaymentMethod('mpesa')" class="sr-only">
+                                        <i class="fa-solid fa-mobile-screen text-xl text-emerald-600 mb-1"></i>
+                                        <span class="text-xs font-bold text-slate-800">M-Pesa</span>
+                                    </label>
+
+                                    <label class="relative flex flex-col items-center justify-center p-3 border-2 border-slate-200 rounded-xl cursor-pointer hover:border-brand-500 transition-all" id="label-card">
+                                        <input type="radio" name="payment_method" value="card" onclick="togglePaymentMethod('card')" class="sr-only">
+                                        <i class="fa-regular fa-credit-card text-xl text-slate-600 mb-1"></i>
+                                        <span class="text-xs font-bold text-slate-800">Tarjeta</span>
+                                    </label>
+
+                                    <label class="relative flex flex-col items-center justify-center p-3 border-2 border-slate-200 rounded-xl cursor-pointer hover:border-brand-500 transition-all" id="label-cash">
+                                        <input type="radio" name="payment_method" value="cash" onclick="togglePaymentMethod('cash')" class="sr-only">
+                                        <i class="fa-solid fa-money-bill-wave text-xl text-amber-600 mb-1"></i>
+                                        <span class="text-xs font-bold text-slate-800">Efectivo</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- M-Pesa Input -->
+                            <div id="mpesa-field-container" class="p-4 bg-emerald-50 rounded-xl border border-emerald-200">
+                                <label class="block text-sm font-semibold text-emerald-900 mb-1" for="mpesa-phone">Número M-Pesa (Kenia) *</label>
+                                <p class="text-xs text-emerald-700 mb-2">Simulación STK Push para el pago.</p>
+                                <div class="relative">
+                                    <span class="absolute left-3 top-2.5 text-sm font-bold text-emerald-700">+254</span>
+                                    <input type="tel" id="mpesa-phone" placeholder="712345678" pattern="[0-9]{9}" class="w-full pl-14 pr-4 py-2 rounded-lg border border-emerald-300 outline-none text-slate-900 font-medium">
+                                </div>
+                            </div>
+
+                            <!-- Card Inputs -->
+                            <div id="card-field-container" class="p-4 bg-slate-50 rounded-xl border border-slate-200 hidden space-y-3">
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-600 mb-1">Número de Tarjeta</label>
+                                    <input type="text" placeholder="4532 •••• •••• 8890" class="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm">
+                                </div>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <input type="text" placeholder="MM/AA" class="px-3 py-2 rounded-lg border border-slate-300 text-sm">
+                                    <input type="text" placeholder="CVC" class="px-3 py-2 rounded-lg border border-slate-300 text-sm">
+                                </div>
+                            </div>
+
+                            <!-- Cash Message -->
+                            <div id="cash-field-container" class="p-4 bg-amber-50 rounded-xl border border-amber-200 hidden">
+                                <p class="text-xs text-amber-800">
+                                    <i class="fa-solid fa-circle-info mr-1"></i> Pago contra entrega en efectivo.
+                                </p>
+                            </div>
+
+                            <button type="submit" id="btn-submit-order" class="w-full py-4 bg-brand-600 hover:bg-brand-700 text-white font-bold text-lg rounded-xl shadow-lg transition-all flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-check"></i> Confirmar Pedido
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Checkout Summary (1 Col) -->
+                    <div class="md:col-span-1">
+                        <div class="bg-slate-900 text-white p-6 rounded-2xl shadow-md sticky top-28">
+                            <h3 class="font-serif text-lg font-bold mb-4 pb-3 border-b border-slate-800">Resumen de Compra</h3>
+                            <div id="checkout-items-summary" class="space-y-3 text-sm mb-6 max-h-52 overflow-y-auto"></div>
+                            <div class="border-t border-slate-800 pt-4 space-y-2 text-sm">
+                                <div class="flex justify-between text-lg font-bold text-white">
+                                    <span>Total:</span>
+                                    <span id="checkout-total-amount" class="text-amber-400">0 KSh</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- PAGE 3: LIVE 15-MINUTE DELIVERY TRACKER (RASTREADOR DE ENTREGA) -->
+        <section id="page-tracking" class="page-view py-12">
+            <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+                
+                <!-- Tracker Box -->
+                <div class="bg-white rounded-3xl border border-slate-200/80 shadow-xl overflow-hidden">
+                    
+                    <!-- Top Status Banner -->
+                    <div class="bg-slate-900 text-white p-8 text-center relative overflow-hidden">
+                        <div class="absolute -top-10 -right-10 w-40 h-40 bg-brand-600/30 rounded-full blur-2xl"></div>
+                        <span class="inline-block px-3 py-1 rounded-full text-xs font-bold bg-brand-600/30 text-brand-300 mb-3 uppercase tracking-wider">
+                            Seguimiento en Tiempo Real
+                        </span>
+                        <h2 class="font-serif text-3xl font-extrabold mb-1" id="tracker-status-title">Preparando tu Pedido</h2>
+                        <p class="text-slate-400 text-sm" id="tracker-status-sub">Tu comida está siendo preparada con ingredientes frescos.</p>
+
+                        <!-- Timer Display -->
+                        <div class="mt-6 inline-flex items-center gap-3 px-6 py-3 rounded-2xl bg-white/10 backdrop-blur-md border border-white/10">
+                            <i class="fa-solid fa-clock text-amber-400 text-2xl animate-pulse"></i>
+                            <span class="font-mono text-3xl font-extrabold tracking-wider text-amber-400" id="timer-display">15:00</span>
+                        </div>
+                    </div>
+
+                    <!-- Progress Bar & Stages -->
+                    <div class="p-8">
+                        
+                        <!-- Visual Progress Line -->
+                        <div class="relative mb-10">
+                            <div class="h-3 bg-slate-100 rounded-full overflow-hidden">
+                                <div id="progress-bar-fill" class="h-full bg-gradient-to-r from-brand-600 to-emerald-500 transition-all duration-1000" style="width: 5%;"></div>
+                            </div>
+                        </div>
+
+                        <!-- 3 Stages Timeline -->
+                        <div class="grid grid-cols-3 gap-2 text-center">
+                            
+                            <!-- Stage 1 -->
+                            <div id="stage-1" class="flex flex-col items-center">
+                                <div id="stage-1-icon" class="w-12 h-12 rounded-2xl bg-brand-600 text-white flex items-center justify-center text-xl font-bold shadow-lg shadow-brand-600/20 mb-2 transition-all">
+                                    🍳
+                                </div>
+                                <h4 class="font-bold text-xs sm:text-sm text-slate-900">1. Preparando</h4>
+                                <p class="text-[10px] sm:text-xs text-slate-500">Min 0 - 3</p>
+                            </div>
+
+                            <!-- Stage 2 -->
+                            <div id="stage-2" class="flex flex-col items-center opacity-40 transition-opacity">
+                                <div id="stage-2-icon" class="w-12 h-12 rounded-2xl bg-slate-100 text-slate-500 flex items-center justify-center text-xl font-bold mb-2 transition-all">
+                                    🛵
+                                </div>
+                                <h4 class="font-bold text-xs sm:text-sm text-slate-900">2. En Camino</h4>
+                                <p class="text-[10px] sm:text-xs text-slate-500">Min 3 - 15</p>
+                            </div>
+
+                            <!-- Stage 3 -->
+                            <div id="stage-3" class="flex flex-col items-center opacity-40 transition-opacity">
+                                <div id="stage-3-icon" class="w-12 h-12 rounded-2xl bg-slate-100 text-slate-500 flex items-center justify-center text-xl font-bold mb-2 transition-all">
+                                    🎉
+                                </div>
+                                <h4 class="font-bold text-xs sm:text-sm text-slate-900">3. ¡Entregado!</h4>
+                                <p class="text-[10px] sm:text-xs text-slate-500">Min 15</p>
+                            </div>
+
+                        </div>
+
+                        <!-- Order Summary Card inside Tracker -->
+                        <div class="mt-8 p-4 bg-slate-50 rounded-2xl border border-slate-200/80">
+                            <h4 class="font-bold text-slate-900 text-sm mb-2 flex justify-between">
+                                <span>Detalles del Pedido</span>
+                                <span id="tracker-order-id" class="text-brand-600">#ES-0000</span>
+                            </h4>
+                            <div id="tracker-items-list" class="text-xs text-slate-600 space-y-1"></div>
+                            <div class="mt-3 pt-2 border-t border-slate-200 flex justify-between font-bold text-sm text-slate-900">
+                                <span>Total:</span>
+                                <span id="tracker-total-price">0 KSh</span>
+                            </div>
+                        </div>
+
+                        <!-- Simulation Speed Controller -->
+                        <div class="mt-6 text-center pt-4 border-t border-slate-100">
+                            <p class="text-xs text-slate-400 mb-2">Simulación de prueba:</p>
+                            <button onclick="speedUpTimer()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs rounded-xl transition-colors">
+                                ⚡ Acelerar Tiempo (Simular Entrega Rápida)
+                            </button>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-slate-900 text-slate-400 border-t border-slate-800 mt-auto py-8">
+        <div class="max-w-6xl mx-auto px-4 text-center text-sm">
+            <p>© 2026 Restaurante El Sabor. Precios en KSh (Shillings Kenianos).</p>
+        </div>
+    </footer>
+
+    <!-- JS Application Logic -->
+    <script>
+        // Catalog Items
+        const catalog = {
+            'food_1': { id: 'food_1', name: 'Papas Fritas y Salchicha', price: 450, icon: '🍟' },
+            'food_2': { id: 'food_2', name: 'Huevos, Pancakes y Salchicha', price: 1200, icon: '🥞' },
+            'food_3': { id: 'food_3', name: 'Waffles Especiales', price: 700, icon: '🧇' },
+            'drink_1': { id: 'drink_1', name: 'Agua Mineral', price: 120, icon: '💧' },
+            'drink_2': { id: 'drink_2', name: 'Jugo Natural', price: 200, icon: '🧃' },
+            'drink_3': { id: 'drink_3', name: 'Refresco / Gaseosa', price: 180, icon: '🥤' },
+            'dessert_cheesecake': { id: 'dessert_cheesecake', name: 'Cheesecake', price: 450, icon: '🍰' }
+        };
+
+        let currentIcePrice = 120;
+        let cart = {};
+        let deliveryTimer = null;
+        let totalSecondsLeft = 15 * 60; // 15 minutes = 900 seconds
+        let totalDuration = 15 * 60;
+        let currentOrderData = null;
+
+        // Dynamic Ice Cream Price Updater
+        function updateIcePrice(price) {
+            currentIcePrice = price;
+            document.getElementById('ice-cream-dynamic-price').textContent = `${price} KSh`;
+        }
+
+        function addSelectedIceCream() {
+            const selectedRadio = document.querySelector('input[name="ice_flavor"]:checked');
+            const flavor = selectedRadio ? selectedRadio.value : 'vainilla';
+            const flavorName = flavor.charAt(0).toUpperCase() + flavor.slice(1);
+            
+            const iceItemId = `dessert_ice_${flavor}`;
+            
+            if (!cart[iceItemId]) {
+                cart[iceItemId] = {
+                    id: iceItemId,
+                    name: `Helado (${flavorName})`,
+                    price: currentIcePrice,
+                    icon: '🍨',
+                    quantity: 1
+                };
+            } else {
+                cart[iceItemId].quantity += 1;
+            }
+            updateCartUI();
+        }
+
+        // Navigation
+        function showPage(pageId) {
+            document.querySelectorAll('.page-view').forEach(view => view.classList.remove('active'));
+            const target = document.getElementById('page-' + pageId);
+            if (target) target.classList.add('active');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+
+            if (pageId === 'checkout') renderCheckoutSummary();
+        }
+
+        // Cart Operations
+        function addToCart(itemId) {
+            if (catalog[itemId]) {
+                if (cart[itemId]) {
+                    cart[itemId].quantity += 1;
+                } else {
+                    cart[itemId] = { ...catalog[itemId], quantity: 1 };
+                }
+                updateCartUI();
+            }
+        }
+
+        function removeFromCart(itemId) {
+            if (cart[itemId]) {
+                if (cart[itemId].quantity > 1) {
+                    cart[itemId].quantity -= 1;
+                } else {
+                    delete cart[itemId];
+                }
+            }
+            updateCartUI();
+            renderCheckoutSummary();
+        }
+
+        function updateCartUI() {
+            const container = document.getElementById('cart-items-container');
+            const cartBadge = document.getElementById('cart-badge');
+            const subtotalEl = document.getElementById('summary-subtotal');
+            const totalEl = document.getElementById('summary-total');
+            const btnProceed = document.getElementById('btn-proceed-checkout');
+
+            let totalCount = 0;
+            let totalPrice = 0;
+            container.innerHTML = '';
+
+            const keys = Object.keys(cart);
+
+            if (keys.length === 0) {
+                container.innerHTML = '<p class="text-slate-400 text-sm text-center py-6">Tu carrito está vacío.<br>Haz clic en "Agregar" en el menú.</p>';
+                btnProceed.disabled = true;
+                btnProceed.className = 'w-full py-3.5 bg-slate-300 text-slate-500 font-bold rounded-xl flex items-center justify-center gap-2 cursor-not-allowed';
+            } else {
+                keys.forEach(id => {
+                    const item = cart[id];
+                    totalCount += item.quantity;
+                    totalPrice += item.price * item.quantity;
+
+                    const itemEl = document.createElement('div');
+                    itemEl.className = 'flex items-center justify-between text-xs py-2 border-b border-slate-100';
+                    itemEl.innerHTML = `
+                        <div class="flex items-center gap-2">
+                            <span>${item.icon}</span>
+                            <div>
+                                <p class="font-bold text-slate-800 leading-tight">${item.name}</p>
+                                <span class="text-slate-500">${item.price.toLocaleString()} KSh c/u</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-1.5">
+                            <button onclick="removeFromCart('${item.id}')" class="w-5 h-5 rounded bg-slate-100 text-slate-700 font-bold flex items-center justify-center text-xs">-</button>
+                            <span class="font-bold text-xs">${item.quantity}</span>
+                            <button onclick="addToCart('${item.id}')" class="w-5 h-5 rounded bg-slate-100 text-slate-700 font-bold flex items-center justify-center text-xs">+</button>
+                        </div>
+                    `;
+                    container.appendChild(itemEl);
+                });
+
+                btnProceed.disabled = false;
+                btnProceed.className = 'w-full py-3.5 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer';
+            }
+
+            cartBadge.textContent = totalCount;
+            subtotalEl.textContent = `${totalPrice.toLocaleString()} KSh`;
+            totalEl.textContent = `${totalPrice.toLocaleString()} KSh`;
+        }
+
+        function renderCheckoutSummary() {
+            const container = document.getElementById('checkout-items-summary');
+            const totalEl = document.getElementById('checkout-total-amount');
+            let totalPrice = 0;
+            container.innerHTML = '';
+
+            Object.keys(cart).forEach(id => {
+                const item = cart[id];
+                totalPrice += item.price * item.quantity;
+                const el = document.createElement('div');
+                el.className = 'flex justify-between items-center text-xs text-slate-300';
+                el.innerHTML = `
+                    <span>${item.quantity}x ${item.name}</span>
+                    <span class="font-semibold text-white">${(item.price * item.quantity).toLocaleString()} KSh</span>
+                `;
+                container.appendChild(el);
+            });
+
+            totalEl.textContent = `${totalPrice.toLocaleString()} KSh`;
+        }
+
+        function togglePaymentMethod(method) {
+            document.getElementById('mpesa-field-container').classList.add('hidden');
+            document.getElementById('card-field-container').classList.add('hidden');
+            document.getElementById('cash-field-container').classList.add('hidden');
+
+            document.getElementById('label-mpesa').classList.remove('border-brand-500', 'bg-brand-50/30');
+            document.getElementById('label-card').classList.remove('border-brand-500', 'bg-brand-50/30');
+            document.getElementById('label-cash').classList.remove('border-brand-500', 'bg-brand-50/30');
+
+            if (method === 'mpesa') {
+                document.getElementById('mpesa-field-container').classList.remove('hidden');
+                document.getElementById('label-mpesa').classList.add('border-brand-500', 'bg-brand-50/30');
+            } else if (method === 'card') {
+                document.getElementById('card-field-container').classList.remove('hidden');
+                document.getElementById('label-card').classList.add('border-brand-500', 'bg-brand-50/30');
+            } else if (method === 'cash') {
+                document.getElementById('cash-field-container').classList.remove('hidden');
+                document.getElementById('label-cash').classList.add('border-brand-500', 'bg-brand-50/30');
+            }
+        }
+
+        // Handle Order Submit & Start 15-Minute Timer
+        function handlePaymentSubmit(e) {
+            e.preventDefault();
+
+            if (Object.keys(cart).length === 0) {
+                alert('Tu carrito está vacío.');
+                showPage('home');
+                return;
+            }
+
+            const clientName = document.getElementById('client-name').value;
+            const clientAddress = document.getElementById('client-address').value;
+            const orderId = '#ES-' + Math.floor(10000 + Math.random() * 90000);
+
+            let totalPrice = 0;
+            const itemsList = Object.keys(cart).map(id => {
+                totalPrice += cart[id].price * cart[id].quantity;
+                return `${cart[id].quantity}x ${cart[id].name}`;
+            });
+
+            currentOrderData = {
+                id: orderId,
+                name: clientName,
+                address: clientAddress,
+                items: itemsList,
+                total: totalPrice
+            };
+
+            // Setup tracker details
+            document.getElementById('tracker-order-id').textContent = orderId;
+            document.getElementById('tracker-total-price').textContent = `${totalPrice.toLocaleString()} KSh`;
+            
+            const trackerItemsContainer = document.getElementById('tracker-items-list');
+            trackerItemsContainer.innerHTML = '';
+            itemsList.forEach(itemStr => {
+                const p = document.createElement('p');
+                p.textContent = itemStr;
+                trackerItemsContainer.appendChild(p);
+            });
+
+            // Reset and start 15 min timer (900s)
+            totalSecondsLeft = 15 * 60;
+            startDeliveryTimer();
+
+            // Clear Cart and show Tracking Nav
+            cart = {};
+            updateCartUI();
+            document.getElementById('payment-form').reset();
+            document.getElementById('nav-tracking-btn').classList.remove('hidden');
+
+            showPage('tracking');
+        }
+
+        function startDeliveryTimer() {
+            if (deliveryTimer) clearInterval(deliveryTimer);
+
+            updateTimerDisplay();
+
+            deliveryTimer = setInterval(() => {
+                if (totalSecondsLeft > 0) {
+                    totalSecondsLeft--;
+                    updateTimerDisplay();
+                } else {
+                    clearInterval(deliveryTimer);
+                    onOrderArrived();
+                }
+            }, 1000);
+        }
+
+        function speedUpTimer() {
+            if (totalSecondsLeft > 10) {
+                totalSecondsLeft -= 180; // Speed up by 3 mins
+                if (totalSecondsLeft < 0) totalSecondsLeft = 0;
+                updateTimerDisplay();
+            }
+        }
+
+        function updateTimerDisplay() {
+            const minutes = Math.floor(totalSecondsLeft / 60);
+            const seconds = totalSecondsLeft % 60;
+            document.getElementById('timer-display').textContent = 
+                `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+
+            // Progress percentage
+            const elapsed = totalDuration - totalSecondsLeft;
+            const progressPct = Math.min(100, Math.max(5, (elapsed / totalDuration) * 100));
+            document.getElementById('progress-bar-fill').style.width = `${progressPct}%`;
+
+            // Stages logic (0-3 mins = Stage 1, 3-15 mins = Stage 2, 15 min = Stage 3)
+            const elapsedMinutes = elapsed / 60;
+
+            const stage1 = document.getElementById('stage-1');
+            const stage2 = document.getElementById('stage-2');
+            const stage3 = document.getElementById('stage-3');
+
+            const stage1Icon = document.getElementById('stage-1-icon');
+            const stage2Icon = document.getElementById('stage-2-icon');
+            const stage3Icon = document.getElementById('stage-3-icon');
+
+            if (elapsedMinutes < 3) {
+                // Stage 1: Preparing
+                document.getElementById('tracker-status-title').textContent = 'Preparando tu Pedido 🍳';
+                document.getElementById('tracker-status-sub').textContent = 'Tu comida está siendo preparada en la cocina.';
+                
+                stage1.classList.remove('opacity-40');
+                stage2.classList.add('opacity-40');
+                stage3.classList.add('opacity-40');
+
+                stage1Icon.className = 'w-12 h-12 rounded-2xl bg-brand-600 text-white flex items-center justify-center text-xl font-bold shadow-lg shadow-brand-600/20 mb-2 animate-pulse-ring';
+                stage2Icon.className = 'w-12 h-12 rounded-2xl bg-slate-100 text-slate-500 flex items-center justify-center text-xl font-bold mb-2';
+            } else if (elapsedMinutes >= 3 && totalSecondsLeft > 0) {
+                // Stage 2: On the way
+                document.getElementById('tracker-status-title').textContent = '¡En Camino! 🛵';
+                document.getElementById('tracker-status-sub').textContent = 'El repartidor lleva tu pedido caliente a tu dirección.';
+
+                stage1.classList.remove('opacity-40');
+                stage2.classList.remove('opacity-40');
+                stage3.classList.add('opacity-40');
+
+                stage1Icon.className = 'w-12 h-12 rounded-2xl bg-emerald-500 text-white flex items-center justify-center text-xl font-bold mb-2';
+                stage2Icon.className = 'w-12 h-12 rounded-2xl bg-brand-600 text-white flex items-center justify-center text-xl font-bold shadow-lg shadow-brand-600/20 mb-2 animate-pulse-ring';
+            } else {
+                onOrderArrived();
+            }
+        }
+
+        function onOrderArrived() {
+            document.getElementById('tracker-status-title').textContent = '¡Tu Pedido ha Llegado! 🎉';
+            document.getElementById('tracker-status-sub').textContent = '¡Buen provecho! Tu comida está lista en tu mesa o domicilio.';
+            document.getElementById('timer-display').textContent = '00:00';
+            document.getElementById('progress-bar-fill').style.width = '100%';
+
+            const stage1 = document.getElementById('stage-1');
+            const stage2 = document.getElementById('stage-2');
+            const stage3 = document.getElementById('stage-3');
+
+            const stage2Icon = document.getElementById('stage-2-icon');
+            const stage3Icon = document.getElementById('stage-3-icon');
+
+            stage1.classList.remove('opacity-40');
+            stage2.classList.remove('opacity-40');
+            stage3.classList.remove('opacity-40');
+
+            stage2Icon.className = 'w-12 h-12 rounded-2xl bg-emerald-500 text-white flex items-center justify-center text-xl font-bold mb-2';
+            stage3Icon.className = 'w-12 h-12 rounded-2xl bg-emerald-600 text-white flex items-center justify-center text-xl font-bold shadow-lg shadow-emerald-600/30 mb-2 animate-bounce';
+        }
+    </script>
+</body>
+</html>
